@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 
 describe("App", () => {
@@ -18,5 +18,26 @@ describe("App", () => {
       screen.getByLabelText("Conversation Frontend Team"),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Tâches Frontend Team")).toBeInTheDocument();
+  });
+
+  it("edits a task from the kanban", async () => {
+    render(<App />);
+    fireEvent.click(await screen.findByText("Implémenter Auth OAuth"));
+    const title = screen.getByLabelText("Titre");
+    fireEvent.change(title, { target: { value: "Configurer Auth SSO" } });
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+    expect(await screen.findByText("Configurer Auth SSO")).toBeInTheDocument();
+  });
+
+  it("deletes a task after confirmation", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    render(<App />);
+    fireEvent.click(await screen.findByText("Implémenter Auth OAuth"));
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer" }));
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Implémenter Auth OAuth"),
+      ).not.toBeInTheDocument();
+    });
   });
 });

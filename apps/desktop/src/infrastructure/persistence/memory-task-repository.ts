@@ -72,4 +72,8 @@ export class MemoryTaskRepository implements TaskRepository {
       : [...this.tasks, task];
     return Promise.resolve();
   }
+  delete(id: string): Promise<void> {
+    this.tasks = this.tasks.filter((task) => task.id !== id);
+    return Promise.resolve();
+  }
 }

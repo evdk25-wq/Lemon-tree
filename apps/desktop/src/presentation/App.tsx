@@ -10,13 +10,16 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { getTeamContext } from "../application/use-cases/get-team-context";
 import { CreateTask } from "../application/use-cases/create-task";
+import { DeleteTask } from "../application/use-cases/delete-task";
 import { ListProjectTasks } from "../application/use-cases/list-project-tasks";
 import { MoveTask } from "../application/use-cases/move-task";
+import { UpdateTask } from "../application/use-cases/update-task";
 import type { Task, TaskStatus } from "../domain/entities/task";
 import { demoMessages, demoProject } from "../infrastructure/demo/demo-project";
 import { createTaskRepository } from "../infrastructure/persistence/task-repository-factory";
 import { ChatPanel } from "./components/ChatPanel";
 import { CreateTaskDialog } from "./components/CreateTaskDialog";
+import { EditTaskDialog } from "./components/EditTaskDialog";
 import { KanbanBoard } from "./components/KanbanBoard";
 import { Sidebar } from "./components/Sidebar";
 import { VideoPanel } from "./components/VideoPanel";
@@ -25,6 +28,7 @@ export function App() {
   const [selectedTeamId, setSelectedTeamId] = useState("team-backend");
   const [tasks, setTasks] = useState<readonly Task[]>([]);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const taskRepository = useMemo(createTaskRepository, []);
   const listTasks = useMemo(
     () => new ListProjectTasks(taskRepository),
@@ -43,6 +47,15 @@ export function App() {
       ),
     [taskRepository],
   );
+  const updateTask = useMemo(
+    () =>
+      new UpdateTask(taskRepository, { now: () => new Date().toISOString() }),
+    [taskRepository],
+  );
+  const deleteTask = useMemo(
+    () => new DeleteTask(taskRepository),
+    [taskRepository],
+  );
   const selectedTeam = getTeamContext(demoProject, selectedTeamId);
   const lead = demoProject.teams[0].members[0];
 
@@ -57,18 +70,50 @@ export function App() {
       );
     });
   };
-  const handleCreateTask = (title: string, priority: Task["priority"]) => {
+  const handleCreateTask = (
+    title: string,
+    priority: Task["priority"],
+    assigneeId: string | null,
+  ) => {
     void createTask
       .execute({
         projectId: demoProject.id,
         teamId: selectedTeam.id,
-        assigneeId: null,
+        assigneeId,
         title,
         priority,
       })
       .then((task) => {
         setTasks((current) => [...current, task]);
       });
+  };
+  const handleUpdateTask = (
+    task: Task,
+    title: string,
+    priority: Task["priority"],
+    assigneeId: string | null,
+  ) => {
+    void updateTask
+      .execute({
+        taskId: task.id,
+        title,
+        priority,
+        assigneeId,
+      })
+      .then((updated) => {
+        setTasks((current) =>
+          current.map((candidate) =>
+            candidate.id === updated.id ? updated : candidate,
+          ),
+        );
+      });
+  };
+  const handleDeleteTask = (task: Task) => {
+    void deleteTask.execute(task.id).then(() => {
+      setTasks((current) =>
+        current.filter((candidate) => candidate.id !== task.id),
+      );
+    });
   };
 
   return (
@@ -200,6 +245,7 @@ export function App() {
               onCreate={() => {
                 setCreateTaskOpen(true);
               }}
+              onEdit={setEditingTask}
             />
           </main>
           <aside className="right-rail">
@@ -210,10 +256,20 @@ export function App() {
       </div>
       <CreateTaskDialog
         open={createTaskOpen}
+        members={selectedTeam.members}
         onClose={() => {
           setCreateTaskOpen(false);
         }}
         onCreate={handleCreateTask}
+      />
+      <EditTaskDialog
+        task={editingTask}
+        members={selectedTeam.members}
+        onClose={() => {
+          setEditingTask(null);
+        }}
+        onSave={handleUpdateTask}
+        onDelete={handleDeleteTask}
       />
     </div>
   );

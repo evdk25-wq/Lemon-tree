@@ -11,6 +11,7 @@ class FakeTasks implements TaskRepository {
     this.task = task;
     return Promise.resolve();
   };
+  delete = () => Promise.resolve();
 }
 
 const task: Task = {

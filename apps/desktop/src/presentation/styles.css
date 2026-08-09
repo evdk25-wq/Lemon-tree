@@ -909,6 +909,18 @@ p {
   gap: 8px;
   margin-top: 18px;
 }
+.dialog-spacer {
+  flex: 1;
+}
+.danger-button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  color: #b52e25;
+  background: #ffebe9;
+  font-weight: 700;
+}
 .primary-button:disabled {
   cursor: not-allowed;
   opacity: 0.45;

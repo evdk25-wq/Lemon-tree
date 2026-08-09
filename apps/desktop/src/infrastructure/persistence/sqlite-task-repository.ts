@@ -63,4 +63,7 @@ export class SQLiteTaskRepository implements TaskRepository {
       ],
     );
   }
+  async delete(id: string): Promise<void> {
+    await this.database.execute("DELETE FROM tasks WHERE id = $1", [id]);
+  }
 }

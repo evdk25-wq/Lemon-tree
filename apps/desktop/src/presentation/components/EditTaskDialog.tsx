@@ -1,57 +1,70 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Task } from "../../domain/entities/task";
 import type { Member } from "../../domain/entities/project";
 
 interface Props {
-  readonly open: boolean;
+  readonly task: Task | null;
   readonly members: readonly Member[];
   readonly onClose: () => void;
-  readonly onCreate: (
+  readonly onSave: (
+    task: Task,
     title: string,
     priority: Task["priority"],
     assigneeId: string | null,
   ) => void;
+  readonly onDelete: (task: Task) => void;
 }
-
-export function CreateTaskDialog({ open, members, onClose, onCreate }: Props) {
+export function EditTaskDialog({
+  task,
+  members,
+  onClose,
+  onSave,
+  onDelete,
+}: Props) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Task["priority"]>("medium");
   const [assigneeId, setAssigneeId] = useState("");
-  if (!open) return null;
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title);
+      setPriority(task.priority);
+      setAssigneeId(task.assigneeId ?? "");
+    }
+  }, [task]);
+  if (!task) return null;
   return (
     <div className="dialog-backdrop" role="presentation" onMouseDown={onClose}>
       <section
         className="task-dialog"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="create-task-title"
+        aria-labelledby="edit-task-title"
         onMouseDown={(event) => {
           event.stopPropagation();
         }}
       >
-        <h2 id="create-task-title">Nouvelle tâche</h2>
+        <h2 id="edit-task-title">Modifier la tâche</h2>
         <form
           onSubmit={(event) => {
             event.preventDefault();
             if (title.trim()) {
-              onCreate(title, priority, assigneeId || null);
-              setTitle("");
+              onSave(task, title, priority, assigneeId || null);
               onClose();
             }
           }}
         >
-          <label htmlFor="task-title">Titre</label>
+          <label htmlFor="edit-title">Titre</label>
           <input
-            id="task-title"
+            id="edit-title"
             autoFocus
             value={title}
             onChange={(event) => {
               setTitle(event.target.value);
             }}
           />
-          <label htmlFor="task-priority">Priorité</label>
+          <label htmlFor="edit-priority">Priorité</label>
           <select
-            id="task-priority"
+            id="edit-priority"
             value={priority}
             onChange={(event) => {
               setPriority(
@@ -67,9 +80,9 @@ export function CreateTaskDialog({ open, members, onClose, onCreate }: Props) {
             <option value="medium">Moyenne</option>
             <option value="high">Haute</option>
           </select>
-          <label htmlFor="task-assignee">Responsable</label>
+          <label htmlFor="edit-assignee">Responsable</label>
           <select
-            id="task-assignee"
+            id="edit-assignee"
             value={assigneeId}
             onChange={(event) => {
               setAssigneeId(event.target.value);
@@ -85,6 +98,19 @@ export function CreateTaskDialog({ open, members, onClose, onCreate }: Props) {
           <div className="dialog-actions">
             <button
               type="button"
+              className="danger-button"
+              onClick={() => {
+                if (window.confirm(`Supprimer « ${task.title} » ?`)) {
+                  onDelete(task);
+                  onClose();
+                }
+              }}
+            >
+              Supprimer
+            </button>
+            <span className="dialog-spacer" />
+            <button
+              type="button"
               className="secondary-button"
               onClick={onClose}
             >
@@ -95,7 +121,7 @@ export function CreateTaskDialog({ open, members, onClose, onCreate }: Props) {
               type="submit"
               disabled={!title.trim()}
             >
-              Créer la tâche
+              Enregistrer
             </button>
           </div>
         </form>

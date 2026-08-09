@@ -7,6 +7,7 @@ interface KanbanBoardProps {
   readonly tasks: readonly Task[];
   readonly onMove: (taskId: string, status: TaskStatus) => void;
   readonly onCreate: () => void;
+  readonly onEdit: (task: Task) => void;
 }
 const columns: readonly { status: TaskStatus; title: string; tone: string }[] =
   [
@@ -20,6 +21,7 @@ export function KanbanBoard({
   tasks,
   onMove,
   onCreate,
+  onEdit,
 }: KanbanBoardProps) {
   const visibleTasks = tasks.filter((task) => task.teamId === team.id);
   return (
@@ -76,6 +78,9 @@ export function KanbanBoard({
                   <button
                     className="kanban-task"
                     draggable
+                    onClick={() => {
+                      onEdit(task);
+                    }}
                     key={task.id}
                     onDragStart={(event) => {
                       event.dataTransfer.setData("text/task-id", task.id);
@@ -96,6 +101,25 @@ export function KanbanBoard({
                             ? "Moyenne"
                             : "Basse"}
                       </span>
+                      {task.assigneeId && (
+                        <span
+                          className="mini-avatar"
+                          title={
+                            team.members.find(
+                              (member) => member.id === task.assigneeId,
+                            )?.displayName
+                          }
+                        >
+                          <img
+                            src={
+                              team.members.find(
+                                (member) => member.id === task.assigneeId,
+                              )?.avatarUrl ?? "/avatars/alex.jpg"
+                            }
+                            alt=""
+                          />
+                        </span>
+                      )}
                     </span>
                   </button>
                 ))}
