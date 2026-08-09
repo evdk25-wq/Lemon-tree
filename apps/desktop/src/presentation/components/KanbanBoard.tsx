@@ -1,32 +1,27 @@
 import { Check, LayoutGrid, List, Plus, SlidersHorizontal } from "lucide-react";
 import type { Team } from "../../domain/entities/project";
+import type { Task, TaskStatus } from "../../domain/entities/task";
 
 interface KanbanBoardProps {
   readonly team: Team;
+  readonly tasks: readonly Task[];
+  readonly onMove: (taskId: string, status: TaskStatus) => void;
+  readonly onCreate: () => void;
 }
+const columns: readonly { status: TaskStatus; title: string; tone: string }[] =
+  [
+    { status: "todo", title: "À faire", tone: "blue" },
+    { status: "inProgress", title: "En cours", tone: "amber" },
+    { status: "done", title: "Terminé", tone: "green" },
+  ];
 
-const columns = [
-  {
-    id: "todo",
-    title: "À faire",
-    tone: "blue",
-    tasks: ["Implémenter Auth OAuth", "Tests Wayland", "Écran paramètres"],
-  },
-  {
-    id: "progress",
-    title: "En cours",
-    tone: "amber",
-    tasks: ["Nouveau moteur de rendu", "API migration v2"],
-  },
-  {
-    id: "done",
-    title: "Terminé",
-    tone: "green",
-    tasks: ["Design system v2", "Intégration DB", "Dashboard Analytics"],
-  },
-] as const;
-
-export function KanbanBoard({ team }: KanbanBoardProps) {
+export function KanbanBoard({
+  team,
+  tasks,
+  onMove,
+  onCreate,
+}: KanbanBoardProps) {
+  const visibleTasks = tasks.filter((task) => task.teamId === team.id);
   return (
     <section className="projects-panel" aria-label={`Tâches ${team.name}`}>
       <header className="projects-toolbar">
@@ -56,52 +51,61 @@ export function KanbanBoard({ team }: KanbanBoardProps) {
         </div>
       </header>
       <div className="kanban-board">
-        {columns.map((column) => (
-          <article className={`kanban-column ${column.tone}`} key={column.id}>
-            <header>
-              <strong>{column.title}</strong>
-              <span>{column.tasks.length}</span>
-            </header>
-            <div className="kanban-tasks">
-              {column.tasks.map((title, index) => (
-                <button className="kanban-task" key={title}>
-                  <span className="task-title">
-                    {column.id === "done" && <Check size={14} />}
-                    {title}
-                  </span>
-                  {column.id !== "done" && (
+        {columns.map((column) => {
+          const columnTasks = visibleTasks.filter(
+            (task) => task.status === column.status,
+          );
+          return (
+            <article
+              className={`kanban-column ${column.tone}`}
+              key={column.status}
+              onDragOver={(event) => {
+                event.preventDefault();
+              }}
+              onDrop={(event) => {
+                const taskId = event.dataTransfer.getData("text/task-id");
+                if (taskId) onMove(taskId, column.status);
+              }}
+            >
+              <header>
+                <strong>{column.title}</strong>
+                <span>{columnTasks.length}</span>
+              </header>
+              <div className="kanban-tasks">
+                {columnTasks.map((task) => (
+                  <button
+                    className="kanban-task"
+                    draggable
+                    key={task.id}
+                    onDragStart={(event) => {
+                      event.dataTransfer.setData("text/task-id", task.id);
+                    }}
+                  >
+                    <span className="task-title">
+                      {task.status === "done" && <Check size={14} />}
+                      {task.title}
+                    </span>
                     <span className="task-meta">
                       <span className="tag">
-                        {index % 2 === 0
-                          ? team.name.replace(" Team", "")
-                          : "UI/UX"}
+                        {team.name.replace(" Team", "")}
                       </span>
-                      <span className={`priority priority-${String(index)}`}>
-                        {index === 0
+                      <span className={`priority priority-${task.priority}`}>
+                        {task.priority === "high"
                           ? "Haute"
-                          : index === 1
+                          : task.priority === "medium"
                             ? "Moyenne"
                             : "Basse"}
                       </span>
-                      <span className="mini-avatar">
-                        <img
-                          src={
-                            team.members[index % team.members.length]
-                              ?.avatarUrl ?? "/avatars/alex.jpg"
-                          }
-                          alt=""
-                        />
-                      </span>
                     </span>
-                  )}
-                </button>
-              ))}
-            </div>
-            <button className="new-task">
-              <Plus size={16} /> Nouvelle tâche
-            </button>
-          </article>
-        ))}
+                  </button>
+                ))}
+              </div>
+              <button className="new-task" onClick={onCreate}>
+                <Plus size={16} /> Nouvelle tâche
+              </button>
+            </article>
+          );
+        })}
       </div>
     </section>
   );

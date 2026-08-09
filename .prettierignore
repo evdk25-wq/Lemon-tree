@@ -3,3 +3,4 @@ dist
 target
 package-lock.json
 rules.md
+apps/desktop/src-tauri/gen

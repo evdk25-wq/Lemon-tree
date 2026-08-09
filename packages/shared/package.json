@@ -1,5 +1,6 @@
 {
   "name": "@lemon-tree/shared",
   "private": true,
+  "license": "UNLICENSED",
   "version": "0.1.0"
 }

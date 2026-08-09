@@ -7,18 +7,69 @@ import {
   Search,
   UserRoundPlus,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getTeamContext } from "../application/use-cases/get-team-context";
+import { CreateTask } from "../application/use-cases/create-task";
+import { ListProjectTasks } from "../application/use-cases/list-project-tasks";
+import { MoveTask } from "../application/use-cases/move-task";
+import type { Task, TaskStatus } from "../domain/entities/task";
 import { demoMessages, demoProject } from "../infrastructure/demo/demo-project";
+import { createTaskRepository } from "../infrastructure/persistence/task-repository-factory";
 import { ChatPanel } from "./components/ChatPanel";
+import { CreateTaskDialog } from "./components/CreateTaskDialog";
 import { KanbanBoard } from "./components/KanbanBoard";
 import { Sidebar } from "./components/Sidebar";
 import { VideoPanel } from "./components/VideoPanel";
 
 export function App() {
   const [selectedTeamId, setSelectedTeamId] = useState("team-backend");
+  const [tasks, setTasks] = useState<readonly Task[]>([]);
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const taskRepository = useMemo(createTaskRepository, []);
+  const listTasks = useMemo(
+    () => new ListProjectTasks(taskRepository),
+    [taskRepository],
+  );
+  const moveTask = useMemo(
+    () => new MoveTask(taskRepository, { now: () => new Date().toISOString() }),
+    [taskRepository],
+  );
+  const createTask = useMemo(
+    () =>
+      new CreateTask(
+        taskRepository,
+        { now: () => new Date().toISOString() },
+        { generate: () => crypto.randomUUID() },
+      ),
+    [taskRepository],
+  );
   const selectedTeam = getTeamContext(demoProject, selectedTeamId);
   const lead = demoProject.teams[0].members[0];
+
+  useEffect(() => {
+    void listTasks.execute(demoProject.id).then(setTasks);
+  }, [listTasks]);
+
+  const handleMoveTask = (taskId: string, status: TaskStatus) => {
+    void moveTask.execute(taskId, status).then((updated) => {
+      setTasks((current) =>
+        current.map((task) => (task.id === updated.id ? updated : task)),
+      );
+    });
+  };
+  const handleCreateTask = (title: string, priority: Task["priority"]) => {
+    void createTask
+      .execute({
+        projectId: demoProject.id,
+        teamId: selectedTeam.id,
+        assigneeId: null,
+        title,
+        priority,
+      })
+      .then((task) => {
+        setTasks((current) => [...current, task]);
+      });
+  };
 
   return (
     <div className="dashboard-shell">
@@ -66,10 +117,7 @@ export function App() {
                   </span>
                   <div>
                     <h2>{lead.displayName}</h2>
-                    <p>
-                      <span className="presence-dot online" /> Statut : occupé,
-                      ouvert
-                    </p>
+                    <p>{lead.role}</p>
                   </div>
                 </article>
                 <article className="leader-card">
@@ -79,9 +127,7 @@ export function App() {
                   </span>
                   <div>
                     <h2>Maya Dubois</h2>
-                    <p>
-                      <span className="presence-dot online" /> En ligne
-                    </p>
+                    <p>Product Manager</p>
                   </div>
                 </article>
               </div>
@@ -147,7 +193,14 @@ export function App() {
                 ))}
               </div>
             </section>
-            <KanbanBoard team={selectedTeam} />
+            <KanbanBoard
+              team={selectedTeam}
+              tasks={tasks}
+              onMove={handleMoveTask}
+              onCreate={() => {
+                setCreateTaskOpen(true);
+              }}
+            />
           </main>
           <aside className="right-rail">
             <VideoPanel team={selectedTeam} />
@@ -155,6 +208,13 @@ export function App() {
           </aside>
         </div>
       </div>
+      <CreateTaskDialog
+        open={createTaskOpen}
+        onClose={() => {
+          setCreateTaskOpen(false);
+        }}
+        onCreate={handleCreateTask}
+      />
     </div>
   );
 }

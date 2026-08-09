@@ -1,6 +1,7 @@
 {
   "name": "lemon-tree",
   "private": true,
+  "license": "UNLICENSED",
   "version": "0.1.0",
   "workspaces": [
     "apps/*",

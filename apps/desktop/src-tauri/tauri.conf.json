@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Lemon Tree",
         "width": 1440,
         "height": 900,
@@ -21,5 +22,6 @@
     ],
     "security": { "csp": null }
   },
+  "plugins": { "sql": { "preload": ["sqlite:lemon-tree.db"] } },
   "bundle": { "active": true, "targets": "all" }
 }

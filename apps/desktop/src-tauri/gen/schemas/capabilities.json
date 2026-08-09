@@ -1,1 +1,1 @@
-{}
+{"default":{"identifier":"default","description":"Permissions de la fenêtre principale Lemon Tree","local":true,"windows":["main"],"permissions":["core:default","sql:default"]}}
