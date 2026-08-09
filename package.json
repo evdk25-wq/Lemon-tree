@@ -1,0 +1,21 @@
+{
+  "name": "lemon-tree",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @lemon-tree/desktop",
+    "desktop": "npm run tauri --workspace @lemon-tree/desktop",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "npm run lint --workspace @lemon-tree/desktop",
+    "test": "npm run test --workspace @lemon-tree/desktop",
+    "typecheck": "npm run typecheck --workspace @lemon-tree/desktop"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}
