@@ -14,6 +14,7 @@ const project: Project = {
       name: "Backend",
       description: "Services",
       progress: 25,
+      color: "blue",
       members: [],
     },
   ],

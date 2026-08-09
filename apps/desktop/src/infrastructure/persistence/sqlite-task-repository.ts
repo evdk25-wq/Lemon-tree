@@ -12,6 +12,7 @@ interface TaskRow {
   priority: Task["priority"];
   created_at: string;
   updated_at: string;
+  due_date: string | null;
 }
 
 function toTask(row: TaskRow): Task {
@@ -25,6 +26,7 @@ function toTask(row: TaskRow): Task {
     priority: row.priority,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    dueDate: row.due_date,
   };
 }
 
@@ -49,7 +51,7 @@ export class SQLiteTaskRepository implements TaskRepository {
 
   async save(task: Task): Promise<void> {
     await this.database.execute(
-      "INSERT INTO tasks (id, project_id, team_id, assignee_id, title, status, priority, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(id) DO UPDATE SET team_id=$3, assignee_id=$4, title=$5, status=$6, priority=$7, updated_at=$9",
+      "INSERT INTO tasks (id, project_id, team_id, assignee_id, title, status, priority, created_at, updated_at, due_date) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT(id) DO UPDATE SET team_id=$3, assignee_id=$4, title=$5, status=$6, priority=$7, updated_at=$9, due_date=$10",
       [
         task.id,
         task.projectId,
@@ -60,6 +62,7 @@ export class SQLiteTaskRepository implements TaskRepository {
         task.priority,
         task.createdAt,
         task.updatedAt,
+        task.dueDate ?? null,
       ],
     );
   }

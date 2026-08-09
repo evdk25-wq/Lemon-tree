@@ -11,6 +11,7 @@ interface Props {
     title: string,
     priority: Task["priority"],
     assigneeId: string | null,
+    dueDate: string | null,
   ) => void;
   readonly onDelete: (task: Task) => void;
 }
@@ -24,11 +25,13 @@ export function EditTaskDialog({
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Task["priority"]>("medium");
   const [assigneeId, setAssigneeId] = useState("");
+  const [dueDate, setDueDate] = useState("");
   useEffect(() => {
     if (task) {
       setTitle(task.title);
       setPriority(task.priority);
       setAssigneeId(task.assigneeId ?? "");
+      setDueDate(task.dueDate ? task.dueDate.slice(0, 16) : "");
     }
   }, [task]);
   if (!task) return null;
@@ -48,7 +51,13 @@ export function EditTaskDialog({
           onSubmit={(event) => {
             event.preventDefault();
             if (title.trim()) {
-              onSave(task, title, priority, assigneeId || null);
+              onSave(
+                task,
+                title,
+                priority,
+                assigneeId || null,
+                dueDate ? new Date(dueDate).toISOString() : null,
+              );
               onClose();
             }
           }}
@@ -80,6 +89,15 @@ export function EditTaskDialog({
             <option value="medium">Moyenne</option>
             <option value="high">Haute</option>
           </select>
+          <label htmlFor="edit-due-date">Échéance</label>
+          <input
+            id="edit-due-date"
+            type="datetime-local"
+            value={dueDate}
+            onChange={(event) => {
+              setDueDate(event.target.value);
+            }}
+          />
           <label htmlFor="edit-assignee">Responsable</label>
           <select
             id="edit-assignee"

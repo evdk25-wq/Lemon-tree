@@ -9,6 +9,7 @@ export interface UpdateTaskInput {
   readonly title: string;
   readonly priority: Task["priority"];
   readonly assigneeId: string | null;
+  readonly dueDate?: string | null;
 }
 
 export class UpdateTask {
@@ -26,6 +27,7 @@ export class UpdateTask {
       title,
       priority: input.priority,
       assigneeId: input.assigneeId,
+      dueDate: input.dueDate ?? null,
       updatedAt: this.clock.now(),
     };
     await this.tasks.save(updated);

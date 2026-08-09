@@ -13,6 +13,7 @@ export interface CreateTaskInput {
   readonly assigneeId: string | null;
   readonly title: string;
   readonly priority: Task["priority"];
+  readonly dueDate?: string | null;
 }
 
 export class CreateTask {
@@ -34,6 +35,7 @@ export class CreateTask {
       title,
       status: "todo",
       priority: input.priority,
+      dueDate: input.dueDate ?? null,
       createdAt: timestamp,
       updatedAt: timestamp,
     };
