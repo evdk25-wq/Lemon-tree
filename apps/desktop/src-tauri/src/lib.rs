@@ -55,6 +55,12 @@ pub fn run() {
             sql: include_str!("../migrations/0009_message_attachments.sql"),
             kind: tauri_plugin_sql::MigrationKind::Up,
         },
+        tauri_plugin_sql::Migration {
+            version: 10,
+            description: "create_teams",
+            sql: include_str!("../migrations/0010_teams.sql"),
+            kind: tauri_plugin_sql::MigrationKind::Up,
+        },
     ];
     tauri::Builder::default()
         .plugin(tauri_plugin_sql::Builder::default().add_migrations("sqlite:lemon-tree.db", migrations).build())

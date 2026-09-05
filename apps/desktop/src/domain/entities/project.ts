@@ -38,6 +38,20 @@ export interface Project {
   readonly teams: readonly Team[];
 }
 
+export function mergeProjectTeams(
+  baseTeams: readonly Team[],
+  persistedTeams: readonly Team[],
+): readonly Team[] {
+  const persistedById = new Map(
+    persistedTeams.map((team) => [team.id, team] as const),
+  );
+  const baseIds = new Set(baseTeams.map((team) => team.id));
+  return [
+    ...baseTeams.map((team) => persistedById.get(team.id) ?? team),
+    ...persistedTeams.filter((team) => !baseIds.has(team.id)),
+  ];
+}
+
 export interface ProjectMessage {
   readonly id: string;
   readonly teamId: string;

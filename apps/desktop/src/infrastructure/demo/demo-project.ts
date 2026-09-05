@@ -6,7 +6,7 @@ import type {
 
 export const demoProject: Project = {
   id: "project-platform-v2",
-  name: "Platform V2",
+  name: "Lemon Tree Core",
   description: "Une plateforme plus rapide, cohérente et prête à évoluer.",
   status: "active",
   progress: 68,
@@ -25,6 +25,14 @@ export const demoProject: Project = {
           avatarUrl: "/avatars/alex.jpg",
           presence: "online",
           role: "Tech Lead",
+        },
+        {
+          id: "maya-dubois",
+          displayName: "Maya Dubois",
+          initials: "MD",
+          avatarUrl: "/avatars/maya.jpg",
+          presence: "online",
+          role: "Product Manager",
         },
       ],
     },

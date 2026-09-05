@@ -8,7 +8,7 @@ const seedTasks: readonly Task[] = [
     id: "task-auth",
     projectId: "project-platform-v2",
     teamId: "team-backend",
-    assigneeId: "julien-martin",
+    assigneeId: "alex-morgan",
     title: "Implémenter Auth OAuth",
     status: "todo",
     priority: "high",

@@ -5,13 +5,129 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  localStorage.clear();
+});
 
 describe("App", () => {
+  it("represents project leadership as a regular manageable team", () => {
+    render(<App />);
+
+    expect(screen.getByText("Projet")).toBeInTheDocument();
+    expect(screen.getAllByText("Lemon Tree Core").length).toBeGreaterThan(1);
+    expect(
+      screen.getByRole("button", { name: "Couleur de Tech Lead" }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Maya Dubois").length).toBeGreaterThan(0);
+  });
+
+  it("opens the personal space from the main navigation", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Mon espace" }));
+
+    expect(
+      screen.getByRole("main", { name: "Mon espace" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Bonjour Alex" }),
+    ).toBeInTheDocument();
+    expect(await screen.findByLabelText("Météo actuelle")).toHaveTextContent(
+      "Bruxelles",
+    );
+    expect(
+      await screen.findByText("Implémenter Auth OAuth"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the real actionable task count and opens the profile menu", async () => {
+    render(<App />);
+
+    expect(
+      await screen.findByText("Implémenter Auth OAuth"),
+    ).toBeInTheDocument();
+    const navigation = screen.getByLabelText("Navigation principale");
+    expect(
+      within(navigation).getByRole("button", { name: "Tâches" }),
+    ).toHaveTextContent("1");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ouvrir le menu du profil" }),
+    );
+
+    expect(
+      screen.getByRole("menu", { name: "Menu du profil" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Disponible")).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitem", { name: /Changer de workspace/ }),
+    ).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it("changes and persists the member presence", () => {
+    render(<App />);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ouvrir le menu du profil" }),
+    );
+    fireEvent.click(
+      screen.getByRole("menuitem", { name: "Changer le statut" }),
+    );
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Occupé" }));
+
+    expect(screen.getByText("Occupé")).toBeInTheDocument();
+    expect(localStorage.getItem("lemon-tree.member-presence")).toBe("busy");
+  });
+
+  it("expands and restores a dashboard panel", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Agrandir la vidéo" }));
+
+    expect(
+      screen.getByRole("button", { name: "Réduire la vidéo" }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Réduire la vidéo" }));
+    expect(
+      screen.getByRole("button", { name: "Agrandir la vidéo" }),
+    ).toBeInTheDocument();
+  });
+
+  it("creates and selects a new team", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Ajouter une équipe" }));
+    fireEvent.change(screen.getByLabelText("Nom de l’équipe"), {
+      target: { value: "Team Nuage" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Couleur green" }));
+    fireEvent.click(screen.getByRole("button", { name: "Créer l’équipe" }));
+
+    expect((await screen.findAllByText("Team Nuage")).length).toBeGreaterThan(
+      1,
+    );
+    expect(
+      screen.getByLabelText("Conversation Team Nuage"),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Canal")).toHaveValue("general");
+  });
+
+  it("renames a team from its options menu", async () => {
+    render(<App />);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Couleur de Backend Team" }),
+    );
+    fireEvent.click(screen.getByRole("menuitem", { name: "Renommer" }));
+    fireEvent.change(screen.getByLabelText("Nom de l’équipe"), {
+      target: { value: "API Team" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+
+    expect((await screen.findAllByText("API Team")).length).toBeGreaterThan(1);
+    expect(screen.getByLabelText("Conversation API Team")).toBeInTheDocument();
+  });
+
   it("switches the visible team context", () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: /^Frontend Team$/ }));
