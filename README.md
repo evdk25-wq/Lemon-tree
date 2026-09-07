@@ -45,15 +45,15 @@ npm run desktop -- dev
 
 ## Commandes
 
-| Commande | Description |
-| --- | --- |
-| `npm run desktop -- dev` | Lance l'application Tauri en développement. |
-| `npm run build` | Génère le build de production de l'interface. |
-| `npm run format` | Formate les fichiers avec Prettier. |
-| `npm run format:check` | Vérifie le formatage. |
-| `npm run lint` | Exécute ESLint. |
-| `npm run typecheck` | Vérifie les types TypeScript. |
-| `npm test` | Lance les tests. |
+| Commande                 | Description                                   |
+| ------------------------ | --------------------------------------------- |
+| `npm run desktop -- dev` | Lance l'application Tauri en développement.   |
+| `npm run build`          | Génère le build de production de l'interface. |
+| `npm run format`         | Formate les fichiers avec Prettier.           |
+| `npm run format:check`   | Vérifie le formatage.                         |
+| `npm run lint`           | Exécute ESLint.                               |
+| `npm run typecheck`      | Vérifie les types TypeScript.                 |
+| `npm test`               | Lance les tests.                              |
 
 ## Architecture
 

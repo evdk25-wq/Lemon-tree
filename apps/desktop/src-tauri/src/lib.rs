@@ -63,7 +63,11 @@ pub fn run() {
         },
     ];
     tauri::Builder::default()
-        .plugin(tauri_plugin_sql::Builder::default().add_migrations("sqlite:lemon-tree.db", migrations).build())
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migrations("sqlite:lemon-tree.db", migrations)
+                .build(),
+        )
         .run(tauri::generate_context!())
         .expect("failed to run Lemon Tree");
 }
