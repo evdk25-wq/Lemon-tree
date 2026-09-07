@@ -2,6 +2,12 @@
 
 Lemon Tree est une application desktop collaborative centrée sur les projets et les équipes.
 
+## Aperçu
+
+![Tableau de bord Lemon Tree](docs/images/dash1.png)
+
+![Espace de travail Lemon Tree](docs/images/dash2.png)
+
 ## Plateformes prises en charge
 
 - Windows
